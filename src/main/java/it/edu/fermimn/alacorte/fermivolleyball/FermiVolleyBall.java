@@ -3,12 +3,17 @@ package it.edu.fermimn.alacorte.fermivolleyball;
 import it.edu.fermimn.alacorte.fermivolleyball.client.Client;
 import it.edu.fermimn.alacorte.fermivolleyball.server.Server;
 import it.italiandudes.idl.common.Logger;
+import org.jetbrains.annotations.Nullable;
 
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
 public final class FermiVolleyBall {
+
+    //Attributes
+    private static Connection dbConnection = null;
 
     //Main Method
     public static void main(String[] args) {
@@ -49,6 +54,17 @@ public final class FermiVolleyBall {
         Logger.log("Application terminating with code: "+exitCode);
 
         System.exit(exitCode);
+    }
+
+    //Methods
+    @Nullable
+    public static Connection getDbConnection() {
+        return dbConnection;
+    }
+    public static boolean setDbConnection(@Nullable Connection dbConnection) {
+        if(FermiVolleyBall.dbConnection != null) return false;
+        FermiVolleyBall.dbConnection = dbConnection;
+        return true;
     }
 
     //App Generic Constants
