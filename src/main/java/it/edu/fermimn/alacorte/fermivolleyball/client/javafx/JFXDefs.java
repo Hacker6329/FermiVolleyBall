@@ -36,12 +36,6 @@ public final class JFXDefs {
             public static final String FXML_MENU = FXML_DIR+"SceneMenu.fxml";
         }
 
-        //XML Scheme Locations
-        public static final class XMLSchema {
-            private static final String XML_SCHEMA_DIR = "/schema/";
-            public static final String XML_SCHEMA_SHEET = XML_SCHEMA_DIR+"scheme_sheet.xsd";
-        }
-
         //GIF Location
         public static final class GIF {
             private static final String GIF_DIR = "/gif/";
