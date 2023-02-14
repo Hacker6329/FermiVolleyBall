@@ -7,7 +7,6 @@ import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.alert.ErrorAlert;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneLoading;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneMenu;
 import it.italiandudes.idl.common.FileHandler;
-import it.italiandudes.idl.common.Logger;
 import it.italiandudes.idl.common.SQLiteHandler;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
@@ -24,6 +23,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 
 @SuppressWarnings("unused")
@@ -104,11 +106,80 @@ public final class ControllerSceneStartup {
         if(dbURLTextField.getText() == null || dbURLTextField.getText().equals("")) {
             new ErrorAlert("ERRORE", "Errore di Input", "La barra di testo e' vuota");
         }else {
+            Client.setIsDBRemote(!isDBLocal);
             if (isDBLocal) openLocalDB();
             else connectToServer();
         }
     }
-    private void connectToServer() {} //TODO: connectToServer()
+    private void connectToServer() {
+        Scene thisScene = dbURLTextField.getScene();
+        Client.getStage().setScene(SceneLoading.getScene());
+        Service<Void> connectToServerService = new Service<Void>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    @Override
+                    protected Void call() {
+                        String domain;
+                        int port;
+                        String[] splitText = dbURLTextField.getText().split(":");
+                        if(splitText.length!=2) {
+                            Platform.runLater(() -> {
+                                Client.getStage().setScene(thisScene);
+                                new ErrorAlert("ERRORE", "Errore di Input", "L'indirizzo inserito non rispetta il formato <indirizzo>:<porta>");
+                            });
+                            return null;
+                        }
+
+                        domain = splitText[0];
+                        try {
+                            port = Integer.parseInt(splitText[1]);
+                        }catch (NumberFormatException e){
+                            Platform.runLater(() -> {
+                                Client.getStage().setScene(thisScene);
+                                new ErrorAlert("ERRORE", "Errore di Input", "La porta inserita non e' un valore numero intero compreso tra 1 e 65535");
+                            });
+                            return null;
+                        }
+                        Socket serverConnection = null;
+
+                        try{
+                            serverConnection = new Socket(domain, port);
+                        }catch (UnknownHostException unknownHostException) {
+                            Platform.runLater(() -> {
+                                Client.getStage().setScene(thisScene);
+                                new ErrorAlert("ERRORE", "Errore di Connessione", "L'indirizzo inserito non e' raggiungibile");
+                            });
+                        }catch (IOException ioException) {
+                            Platform.runLater(() -> {
+                                Client.getStage().setScene(thisScene);
+                                new ErrorAlert("ERRORE", "Errore di Connessione", "Errore durante la connessione col server");
+                            });
+                        }
+
+                        if(serverConnection == null) {
+                            return null;
+                        }
+
+                        if(!Client.setServerConnection(serverConnection)) {
+                            try {
+                                serverConnection.close();
+                            }catch (Exception ignored){}
+                            Platform.runLater(() -> {
+                                Client.getStage().setScene(thisScene);
+                                new ErrorAlert("ERRORE", "Errore di Connessione", "E' gia' presente una connessione verso un server");
+                            });
+                            return null;
+                        }
+
+                        Platform.runLater(() -> Client.getStage().setScene(SceneMenu.getScene()));
+                        return null;
+                    }
+                };
+            }
+        };
+        connectToServerService.start();
+    }
     private void openLocalDB() {
         Scene thisScene = dbURLTextField.getScene();
         Client.getStage().setScene(SceneLoading.getScene());
@@ -145,7 +216,7 @@ public final class ControllerSceneStartup {
                             return null;
                         }
 
-                        if(!FermiVolleyBall.setDbConnection(dbConnection)){
+                        if(!Client.setDbConnection(dbConnection)){
                             throw new RuntimeException("There is already an open connection with a database");
                         }
                         Platform.runLater(() -> Client.getStage().setScene(SceneMenu.getScene()));
