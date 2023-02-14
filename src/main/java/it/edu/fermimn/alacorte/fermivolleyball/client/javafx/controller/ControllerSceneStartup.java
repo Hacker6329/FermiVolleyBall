@@ -134,6 +134,7 @@ public final class ControllerSceneStartup {
                         domain = splitText[0];
                         try {
                             port = Integer.parseInt(splitText[1]);
+                            if(port<=0) throw new NumberFormatException();
                         }catch (NumberFormatException e){
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);

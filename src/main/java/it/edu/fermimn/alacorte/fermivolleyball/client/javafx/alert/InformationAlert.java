@@ -10,6 +10,7 @@ public final class InformationAlert extends Alert {
     //Constructors
     public InformationAlert(String title, String header, String content){
         super(AlertType.INFORMATION);
+        setResizable(true);
         ((Stage) getDialogPane().getScene().getWindow()).getIcons().add(JFXDefs.AppInfo.LOGO);
         if(title!=null) setTitle(title);
         if(header!=null) setHeaderText(header);
