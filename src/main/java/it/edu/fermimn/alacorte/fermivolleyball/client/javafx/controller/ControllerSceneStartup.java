@@ -7,6 +7,7 @@ import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.alert.ErrorAlert;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneLoading;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneMenu;
 import it.italiandudes.idl.common.FileHandler;
+import it.italiandudes.idl.common.Logger;
 import it.italiandudes.idl.common.SQLiteHandler;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
@@ -75,7 +76,10 @@ public final class ControllerSceneStartup {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleziona il Database");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fermi VolleyBall DB", "*."+JFXDefs.AppInfo.DB_FILE_EXTENSION));
-        fileChooser.setInitialDirectory(new File(FermiVolleyBall.Defs.JAR_POSITION).getParentFile());
+        File jarDirectory = new File(FermiVolleyBall.Defs.JAR_POSITION).getParentFile();
+        if(jarDirectory.isDirectory()){
+            fileChooser.setInitialDirectory(jarDirectory);
+        }
         File fileDB = fileChooser.showOpenDialog(fileChooserButton.getScene().getWindow());
         if(fileDB!=null) {
             newLocalDBButton.setDisable(!fileDB.exists() || !fileDB.isFile());
