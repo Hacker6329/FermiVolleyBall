@@ -2,6 +2,7 @@ package it.edu.fermimn.alacorte.fermivolleyball.client;
 
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.JFXDefs;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneStartup;
+import it.italiandudes.idl.common.Logger;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 @SuppressWarnings("unused")
 public final class Client extends Application {
@@ -59,7 +61,42 @@ public final class Client extends Application {
         return dbConnection;
     }
     public static boolean setDbConnection(@Nullable Connection dbConnection) {
-        if(Client.dbConnection != null) return false;
+        if(dbConnection == null) {
+            if(Client.dbConnection == null) {
+                return true;
+            }
+            try {
+                if (!Client.dbConnection.isClosed()) {
+                    return false;
+                } else {
+                    Client.dbConnection = null;
+                    return true;
+                }
+            }catch (SQLException e) {
+                Logger.log(e);
+                try {
+                    Client.dbConnection.close();
+                }catch (Exception ignored){}
+                Client.dbConnection = null;
+                return false;
+            }
+        }
+        if(Client.dbConnection == null) {
+            Client.dbConnection = dbConnection;
+            return true;
+        }
+        try {
+            if (!Client.dbConnection.isClosed()) {
+                return false;
+            }
+        }catch (SQLException e) {
+            Logger.log(e);
+            try {
+                Client.dbConnection.close();
+            }catch (Exception ignored){}
+            Client.dbConnection = null;
+            return false;
+        }
         Client.dbConnection = dbConnection;
         return true;
     }
@@ -74,7 +111,24 @@ public final class Client extends Application {
         return serverConnection;
     }
     public static boolean setServerConnection(@Nullable Socket serverConnection) {
-        if(Client.serverConnection != null) return false;
+        if(serverConnection == null) {
+            if(Client.serverConnection == null) {
+                return true;
+            }
+            if(!Client.serverConnection.isClosed()) {
+                return false;
+            } else {
+                Client.serverConnection = null;
+                return true;
+            }
+        }
+        if(Client.serverConnection == null) {
+            Client.serverConnection = serverConnection;
+            return true;
+        }
+        if(!Client.serverConnection.isClosed()) {
+            return false;
+        }
         Client.serverConnection = serverConnection;
         return true;
     }
