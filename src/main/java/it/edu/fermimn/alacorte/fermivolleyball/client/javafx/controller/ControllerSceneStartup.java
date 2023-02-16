@@ -7,6 +7,7 @@ import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.alert.ErrorAlert;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneLoading;
 import it.edu.fermimn.alacorte.fermivolleyball.client.javafx.scene.SceneMenu;
 import it.italiandudes.idl.common.FileHandler;
+import it.italiandudes.idl.common.Logger;
 import it.italiandudes.idl.common.SQLiteHandler;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
@@ -124,6 +125,7 @@ public final class ControllerSceneStartup {
                         int port;
                         String[] splitText = dbURLTextField.getText().split(":");
                         if(splitText.length!=2) {
+                            Logger.log("The provided address doesn't respect the format <address>:<port>");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore di Input", "L'indirizzo inserito non rispetta il formato <indirizzo>:<porta>");
@@ -136,6 +138,7 @@ public final class ControllerSceneStartup {
                             port = Integer.parseInt(splitText[1]);
                             if(port<=0) throw new NumberFormatException();
                         }catch (NumberFormatException e){
+                            Logger.log("The provided port isn't an integer between 1 and 65535");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore di Input", "La porta inserita non e' un valore numero intero compreso tra 1 e 65535");
@@ -152,6 +155,7 @@ public final class ControllerSceneStartup {
                                 new ErrorAlert("ERRORE", "Errore di Connessione", "L'indirizzo inserito non e' raggiungibile");
                             });
                         }catch (IOException ioException) {
+                            Logger.log("An error has occurred during server connection");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore di Connessione", "Errore durante la connessione col server");
@@ -166,6 +170,7 @@ public final class ControllerSceneStartup {
                             try {
                                 serverConnection.close();
                             }catch (Exception ignored){}
+                            Logger.log("There is an already open connection with the server");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore di Connessione", "E' gia' presente una connessione verso un server");
@@ -194,13 +199,15 @@ public final class ControllerSceneStartup {
                         assert dbPath!=null && dbPath.equals("");
                         File fileChecker = new File(dbPath);
                         if(!fileChecker.exists() || !fileChecker.isFile()){
+                            Logger.log("The provided path doesn't exist or doesn't bring to an existing file");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore inserimento DB", "Il percorso inserito non esiste oppure non e' un file! Inserire un percorso a un file valido");
                             });
                             return null;
                         }
-                        if(!FileHandler.getFileExtension(dbPath).equals("db3")){
+                        if(!FileHandler.getFileExtension(dbPath).equals(JFXDefs.AppInfo.DB_FILE_EXTENSION)){
+                            Logger.log("The provided path doesn't respect the format "+JFXDefs.AppInfo.DB_FILE_EXTENSION);
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore inserimento DB", "Il file inserito non e' di formato "+JFXDefs.AppInfo.DB_FILE_EXTENSION +"! Inserire un percorso a un file valido");
@@ -210,6 +217,7 @@ public final class ControllerSceneStartup {
                         Connection dbConnection = SQLiteHandler.openConnection(dbURLTextField.getText());
 
                         if(dbConnection==null){
+                            Logger.log("An error has occurred during database connection");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore connessione DB", "Si e' verificato un errore durante la connessione al database");
@@ -218,6 +226,7 @@ public final class ControllerSceneStartup {
                         }
 
                         if(!Client.setDbConnection(dbConnection)){
+                            Logger.log("There is an already open connection with the database");
                             Platform.runLater(() -> {
                                 Client.getStage().setScene(thisScene);
                                 new ErrorAlert("ERRORE", "Errore di connessione DB", "C'e' gia' una connessione aperta con il database");
