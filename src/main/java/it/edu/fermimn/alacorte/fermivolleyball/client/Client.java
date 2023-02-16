@@ -14,10 +14,10 @@ import java.sql.Connection;
 public final class Client extends Application {
 
     //Attributes
-    private static Stage stage;
+    private static Stage stage = null;
     private static boolean isDBRemote = false;
-    private static Connection dbConnection = null;
-    private static Socket serverConnection = null;
+    @Nullable private static Connection dbConnection = null;
+    @Nullable private static Socket serverConnection = null;
 
     @Override
     public void start(Stage stage) {
