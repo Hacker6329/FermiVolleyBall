@@ -218,7 +218,11 @@ public final class ControllerSceneStartup {
                         }
 
                         if(!Client.setDbConnection(dbConnection)){
-                            throw new RuntimeException("There is already an open connection with a database");
+                            Platform.runLater(() -> {
+                                Client.getStage().setScene(thisScene);
+                                new ErrorAlert("ERRORE", "Errore di connessione DB", "C'e' gia' una connessione aperta con il database");
+                            });
+                            return null;
                         }
                         Platform.runLater(() -> Client.getStage().setScene(SceneMenu.getScene()));
                         return null;
